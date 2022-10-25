@@ -9,7 +9,7 @@ data_augmentation = {
     'train': A.Compose([
         A.Resize(256, 256),
         A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(scale_limit=0.1, rotate_limit=10),
+        A.ShiftScaleRotate(shift_limit=0.0, scale_limit=0.2, rotate_limit=10, border_mode=0, p=0.5),
         A.RandomRotate90(),
         A.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -17,6 +17,10 @@ data_augmentation = {
             max_pixel_value=255.0,
             p=1.0
         ),
+        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.5),
+        A.CoarseDropout(max_holes=1, max_height=int(256 * 0.2), max_width=int(256 * 0.2),
+                        min_holes=1, min_height=int(256 * 0.1), min_width=int(256 * 0.1),
+                        fill_value=0, p=0.5),
         ToTensorV2()], p=1.),
 
     'valid': A.Compose([

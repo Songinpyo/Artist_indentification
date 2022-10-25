@@ -19,13 +19,16 @@ class convnext_xlarge(nn.Module):
             nn.Linear(1024, 512),
             nn.BatchNorm1d(512, eps=1e-05, momentum=0.1),
             nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
+            nn.ReLU(),
         )
         for param in self.classifier.parameters():
             param.requires_grad = True
 
-        self.reducer = nn.AdaptiveAvgPool1d(64)
+        self.reducer = nn.AdaptiveAvgPool1d(128)
 
-        self.arc = AdaCos(in_features=64, out_features=args.num_classes, m=0.5)
+        self.arc = AdaCos(in_features=128, out_features=args.num_classes, m=0.5)
 
     def forward(self, x, label=None):
         # x = x/255.0
