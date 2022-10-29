@@ -21,6 +21,7 @@ data_augmentation = {
         A.CoarseDropout(max_holes=1, max_height=int(256 * 0.2), max_width=int(256 * 0.2),
                         min_holes=1, min_height=int(256 * 0.1), min_width=int(256 * 0.1),
                         fill_value=0, p=0.5),
+        A.RandomSizedCrop([64, 64], 256, 256, w2h_ratio=1.0, interpolation=1, always_apply=False, p=0.5),
         ToTensorV2()], p=1.),
 
     'valid': A.Compose([
