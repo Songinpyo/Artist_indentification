@@ -28,17 +28,17 @@ from tqdm import tqdm
 class config:
     seed = 1997
     epochs = 100
-    batch_size = 2
+    batch_size = 128
 
     clip_model_name1 = "ViT-H-14"
     clip_model_name2 = "ViT-L-14"
     clip_model_name3 = "ViT-B-32"
     clip_half = True
-    embed_dim = 64
+    embed_dim = 256
     neck_id = 0
 
     num_classes = 50
-    checkpoint_path = "./pretrained/fold0_epoch005_tloss18.2422.bin"
+    # checkpoint_path = "./pretrained/fold0_epoch005_tloss18.2422.bin"
 
 # checkpoint = torch.load(config.checkpoint_path)
 
@@ -243,7 +243,7 @@ class GUIEModel(nn.Module):
 
         x3 = self.preprocess_image3(x)
         if self.clip_half:
-            x3 = self.encoder2(x3.half()).to(torch.float32)
+            x3 = self.encoder3(x3.half()).to(torch.float32)
         else:
             x3 = self.encoder1(x3)
 
@@ -256,7 +256,7 @@ class GUIEModel(nn.Module):
         x = self.head(x)
         return x
 
-base_model = GUIEModel()
+# base_model = GUIEModel()
 # base_model = nn.DataParallel(_bas e_model).to(torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
 # base_model.load_state_dict(checkpoint)
 
@@ -282,9 +282,15 @@ class SubModel(torch.nn.Module):
         self.std3 = clip_model3.visual.image_std
         self.image_size3 = clip_model3.visual.image_size
 
-        self.neck = base_model.neck
+        self.neck = GUIEModel().neck
 
         self.classifier = nn.Sequential(
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
+            nn.ReLU(),
             nn.Linear(256, 256),
             nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
             nn.ReLU(),
@@ -365,17 +371,17 @@ data_augmentation = {
         A.HorizontalFlip(p=0.5),
         A.ShiftScaleRotate(shift_limit=0.0, scale_limit=0.2, rotate_limit=10, border_mode=0, p=0.5),
         A.RandomRotate90(),
-        A.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-            max_pixel_value=255.0,
-            p=1.0
-        ),
+        # A.Normalize(
+        #     mean=[0.485, 0.456, 0.406],
+        #     std=[0.229, 0.224, 0.225],
+        #     max_pixel_value=255.0,
+        #     p=1.0
+        # ),
         A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.5),
-        A.CoarseDropout(max_holes=1, max_height=int(256 * 0.2), max_width=int(256 * 0.2),
-                        min_holes=1, min_height=int(256 * 0.1), min_width=int(256 * 0.1),
+        A.CoarseDropout(max_holes=1, max_height=int(336 * 0.2), max_width=int(336 * 0.2),
+                        min_holes=1, min_height=int(336 * 0.1), min_width=int(336 * 0.1),
                         fill_value=0, p=0.5),
-        A.RandomSizedCrop([64, 64], 256, 256, w2h_ratio=1.0, interpolation=1, always_apply=False, p=0.5),
+        A.RandomSizedCrop([64, 64], 336, 336, w2h_ratio=1.0, interpolation=1, always_apply=False, p=0.5),
         ToTensorV2()], p=1.),
 
     'valid': A.Compose([
@@ -394,7 +400,7 @@ def train_data_loader():
     df = pd.read_csv('./train.csv')
 
     batch_size = config.batch_size
-    num_workers = 24
+    num_workers = 20
     pin_memory = True
     shuffle = True
 
@@ -412,7 +418,7 @@ def valid_data_loader():
     df = pd.read_csv('./test.csv')
 
     batch_size = config.batch_size
-    num_workers = 24
+    num_workers = 20
     pin_memory = True
     shuffle = False
 
@@ -432,6 +438,7 @@ def train():
     # two gpus
     _model = SubModel().to(device)
     model = nn.DataParallel(_model).to(device)
+    # model = SubModel().to(device)
 
     best_loss = 1997
 
