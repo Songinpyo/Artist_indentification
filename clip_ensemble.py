@@ -288,15 +288,27 @@ class SubModel(torch.nn.Module):
             nn.Linear(256, 256),
             nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
             nn.ReLU(),
+            nn.Dropout(0.1),
             nn.Linear(256, 256),
             nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
             nn.ReLU(),
+            nn.Dropout(0.1),
             nn.Linear(256, 256),
             nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
             nn.ReLU(),
+            nn.Dropout(0.1),
             nn.Linear(256, 256),
             nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
             nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(256, 256),
+            nn.BatchNorm1d(256, eps=1e-05, momentum=0.1),
+            nn.ReLU(),
+            nn.Dropout(0.1),
             nn.Linear(256, 128),
             nn.BatchNorm1d(128, eps=1e-05, momentum=0.1),
             nn.ReLU(),
@@ -443,7 +455,7 @@ def train():
     best_loss = 1997
 
     optimizer = torch.optim.Adam(model.parameters(), 1e-3)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.97)
     train_loader = train_data_loader()
 
     for epoch in range(1, config.epochs + 1):

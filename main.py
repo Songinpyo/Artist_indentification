@@ -15,7 +15,7 @@ def parser():
     # dataloader
     parser.add_argument('--train_df', type=str, default='./train.csv')
     parser.add_argument('--valid_df', type=str, default='./test.csv')
-    parser.add_argument('--num_workers', type=int, default=24)
+    parser.add_argument('--num_workers', type=int, default=20)
     parser.add_argument('--batch_size', type=int, default=64)
     # train
     # parser.add_argument('--device', type=int, default=1)

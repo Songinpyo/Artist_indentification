@@ -9,13 +9,15 @@ from tqdm import tqdm
 
 from utils.dataloader import train_data_loader, valid_data_loader
 from utils.model import convnext_xlarge
+from utils.loss import FocalLoss
 from sklearn import preprocessing
 
 
 
 def train(args):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    criterion = nn.CrossEntropyLoss().to(device)
+    # criterion = nn.CrossEntropyLoss().to(device)
+    criterion = FocalLoss(50).to(device)
 
     # two gpus
     _model = convnext_xlarge(args).cuda()
@@ -59,7 +61,7 @@ def train(args):
         if best_loss > current_loss:
             best_loss = current_loss
 
-            torch.save(model.state_dict(), './saved/best_loss.pth')
+            torch.save(model.state_dict(), './saved/convnext_best_loss.pth')
             print('Best Loss Model Saved.')
 
         if scheduler is not None:
@@ -73,7 +75,7 @@ def train(args):
 
 def test(args, model, device):
 
-        model.load_state_dict(torch.load('./saved/best_loss.pth'))
+        model.load_state_dict(torch.load('./saved/convnext_best_loss.pth'))
 
         valid_loader = valid_data_loader(args)
 
@@ -94,4 +96,4 @@ def test(args, model, device):
 
         submit = pd.read_csv('./sample_submission.csv')
         submit['artist'] = model_preds
-        submit.to_csv('./submit.csv', index=False)
+        submit.to_csv('./submit_convnext.csv', index=False)
